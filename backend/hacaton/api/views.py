@@ -1,4 +1,5 @@
 from django.shortcuts import redirect
+from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from cal.models import Event
@@ -13,7 +14,8 @@ def index(request):
 
 @api_view(['GET'])
 def monthView(request, month):
-    events = Event.objects.filter(date__month=month)
+    current_month = datetime.now().month
+    events = Event.objects.filter(Q(date__month__gte=current_month) & Q(date__month=month))
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
 
