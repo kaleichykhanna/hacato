@@ -56,7 +56,7 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAnys'
+        'rest_framework.permissions.AllowAny'
     ]
 }
 
