@@ -1,9 +1,10 @@
 from django.shortcuts import render
-import re
-import time
+import re  
+import time 
 import instaloader
 from datetime import datetime
 from .models import Event
+from django.http import HttpResponse
 
 
 
@@ -17,9 +18,12 @@ def extract_time_and_place(text):
     date_day = None
     courpus = None
 
+    try:
 
-    sentences = text.split("\n")
-    # name = sentence[0]
+        sentences = text.split("\n")
+    except AttributeError:
+        return None
+    name = sentences[0]
       
 
     for sentence in sentences:
@@ -50,15 +54,16 @@ def extract_time_and_place(text):
                     if place:
                         courpus = place.group()[-1]
 
-    if not date_month:
-        date_month = 12
-    if not date_day:
-        date_day = 31
-    if not time:
-        time = "00:01"
+    if not time: 
+        return None
     if not courpus:
-        courpus = 5
-    name = 'hehehaha'
+        return None
+    if not date_month:
+        return None
+    if not date_day:
+        return None
+
+
     return {'month': date_month, 'day': int(date_day), 'time': time, 'building': courpus, 'name': name}
 
 
@@ -69,7 +74,7 @@ def index(request):
 
     profile = instaloader.Profile.from_username(bot.context, 'fcad_bsuir')
 
-    posts = profile.get_posts()
+    posts = profile.get_posts() 
 
     target_date = datetime(2024, 1, 1)  
 
@@ -77,13 +82,18 @@ def index(request):
         if post.date > target_date:
             print(f"Post {index}:")
             post_url = f"https://www.instagram.com/p/{post.shortcode}/"
-            event = extract_time_and_place(post.caption)
-            Event.objects.create(
-            name=event['name'], 
-            date=datetime(year=2024, month=event['month'], day=event['day']), 
-            time=event['time'], 
-            university_building=event['building'], 
-            description=post.caption, 
-            faculty="FCAD",
-            date_time_post=post.date,
-            url=post_url) 
+            try:
+                event = extract_time_and_place(post.caption)
+                Event.objects.create(
+                name=event['name'], 
+                date=datetime(year=2024, month=event['month'], day=event['day']), 
+                time=event['time'], 
+                university_building=event['building'], 
+                description=post.caption, 
+                faculty="FCAD",
+                date_time_post=post.date,
+                url=post_url) 
+            except TypeError:
+                pass
+
+    return HttpResponse("Ich bin fertig!!")
